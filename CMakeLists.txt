@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.21)
+project(EmbervaleCompanion LANGUAGES CXX)
+add_library(EmbervaleCompanion SHARED src/companion.cpp)
+target_compile_features(EmbervaleCompanion PRIVATE cxx_std_17)
+target_compile_definitions(EmbervaleCompanion PRIVATE WIN32_LEAN_AND_MEAN NOMINMAX UNICODE _UNICODE)
+set_target_properties(EmbervaleCompanion PROPERTIES OUTPUT_NAME "EmbervaleCompanion")
