@@ -1,20 +1,22 @@
-# In-game integration design (not implemented yet)
+# Shroudtopia integration checkpoint (v0.6)
 
-## Proposed loading strategy
+Upstream: https://github.com/s0t7x/shroudtopia
 
-Investigate the open-source Shroudtopia loader (MIT):
-https://github.com/s0t7x/shroudtopia
+The upstream README describes a `Mod` C++ class with metadata, `Load`, `Unload`, `Activate`, `Deactivate`, `Update`, and an exported `CreateModInstance` factory. The adapter implements these methods but is deliberately compiled **only** with the upstream header from a compatible release. The README alone is not a stable ABI specification.
 
-The published interface describes a `Mod` implementation and `CreateModInstance` export, with lifecycle methods `Load`, `Unload`, `Activate`, `Deactivate`, `Update`. **Our current DLL does not implement that ABI** and must not be placed in `mods` yet.
+## Validation sequence
 
-Before writing an adapter, validate the **exact header and binary version** on the user's game version, then build against that header, not a guessed struct layout. Shroudtopia does not automatically provide a Vulkan draw callback. The graphics integration is a separate workstream.
+1. Verify which Shroudtopia release, if any, supports your Enshrouded client version. This is not established by a Vulkan availability probe.
+2. Obtain `shroudtopia.h` from that **same** source revision; configure `SHROUDTOPIA_INCLUDE_DIR`.
+3. Compile the optional adapter and inspect exports using `dumpbin /exports` (expect `CreateModInstance`).
+4. Before installation, back up the game's existing proxy DLLs and check for conflicts with other mod loaders.
+5. Follow the loader's official installation guide. Install only the optional `EmbervaleCompanionShroudtopia.dll` in the loader's documented mods location. Never rename it to `winmm.dll`, `dinput8.dll`, or replace a game DLL.
+6. Launch the game; inspect Shroudtopia's logs and `embervale-companion.log` beside the host executable. A log file alone does not prove the correct game process loaded the mod; verify the process and lifecycle events.
+7. If the game crashes or the mod is not recognized, remove the optional mod and restore backups before further debugging.
 
-## Graphics workstream
+## Known limitations
 
-1. Confirm client loader compatibility and nonconflicting installation (existing proxy DLLs may collide).
-2. Establish a safe lifecycle and log to a file, with no render hooks.
-3. Verify a Vulkan frame hook/render callback with correct synchronization, swapchain lifecycle, and resize handling.
-4. Render a minimal Dear ImGui panel with fonts supporting PT-BR UTF-8.
-5. Add map content, position acquisition, and persistence only after stable rendering.
-
-Do not copy proprietary code or assets from other mods. Avoid changing game saves. Test on a backed-up installation and keep all experiments reversible.
+- The adapter does not render UI or hook Vulkan.
+- The SDK may have changed since the public README. `ModMetaData` aggregate initialization and the `Mod` interface must be verified against the actual header.
+- No support guarantee for the current game version or coexistence with Embervale Atlas.
+- No code or binary from Shroudtopia is included.

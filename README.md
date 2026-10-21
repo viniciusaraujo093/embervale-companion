@@ -1,30 +1,41 @@
-# Embervale Companion v0.5 — Vulkan readiness
+# Embervale Companion v0.6 — Mod-loader lifecycle experiment
 
-Independent C++17 project for Enshrouded. **Not yet an in-game mod.**
+Independent C++17 project for Enshrouded. **Not yet an in-game map or overlay.**
 
-## New in v0.5
+## New in v0.6
 
-- `EmbervaleCompanionVulkanProbe.exe`: checks that the Windows Vulkan loader is present, reports its API version, creates a Vulkan instance and counts physical devices. **No Vulkan SDK is needed for this probe.** It does not detect which graphics API Enshrouded itself is using.
-- `docs/INTEGRATION.md`: proposed Shroudtopia lifecycle adapter and Vulkan UI integration roadmap, clearly separated.
-- Win32 preview and localization tests remain available; the PT-BR language label uses a Unicode escape for a source-encoding-independent build.
-- Diagnostic DLL is still **not** compatible with any mod loader. Do not copy it into the game folder.
+- Optional Shroudtopia lifecycle adapter in `src/shroudtopia_adapter.cpp` implementing `CreateModInstance`, `Load`, `Unload`, `Activate`, `Deactivate`, and `Update`.
+- Appends diagnostic events to `embervale-companion.log` beside the host executable, if writable. The first update is logged once to avoid flooding.
+- **The adapter is only built when the exact upstream Shroudtopia SDK header is provided.** This avoids inventing an incompatible C++ ABI. Loader compatibility with Enshrouded 1.0 remains unverified.
+- All v0.5 diagnostics, localization tests, and Win32 preview remain.
 
-## Windows build
-
-Open in VS Code and run **CMake: Configure** and **CMake: Build** with your MSVC x64 kit. Then from the project directory:
+## Build and test on Windows
 
 ```powershell
+cmake -S . -B build
+cmake --build build --config Debug
 ctest --test-dir build -C Debug --output-on-failure
-.\build\Debug\EmbervaleCompanionVulkanProbe.exe
-.\build\Debug\EmbervaleCompanionPreview.exe
 ```
 
-With a single-configuration generator, executables may instead be in `build\`.
+To enable the loader adapter, download the official `shroudtopia.h` from the source version matching your installed Shroudtopia release, then configure:
 
-Expected Vulkan probe output includes `Vulkan loader API: ...`, `Vulkan physical devices: 1` (or another nonzero count), and `PASS: Vulkan is available.` This verifies only the local Vulkan runtime, **not** the game's renderer or overlay compatibility.
+```powershell
+cmake -S . -B build -DSHROUDTOPIA_INCLUDE_DIR="C:/path/to/upstream/header/directory"
+cmake --build build --config Debug
+```
 
-## Next milestone
+The optional target outputs `EmbervaleCompanionShroudtopia.dll`. If the SDK ABI or metadata layout has changed, compilation may fail: **do not work around this by fabricating a replacement header**. Consult `docs/INTEGRATION.md`.
 
-Validate the exact loader ABI on the current game version; build a genuine mod-loader lifecycle DLL, then implement Vulkan frame integration and Dear ImGui. No game hooks, injection, or map functionality are claimed in v0.5.
+**Do not copy the diagnostic `EmbervaleCompanion.dll` into the game directory.** Do not install multiple competing proxy DLL loaders without first reviewing their compatibility and backups. Confirm loader release compatibility before trying the optional adapter. No hook, injection, Vulkan overlay, player position, or map feature is implemented yet.
 
-No Embervale Atlas code or assets are included.
+## AI-Assisted Development
+
+Embervale Companion is developed with assistance from AI tools, including OpenAI's ChatGPT.
+
+AI is used for code generation, architectural exploration, documentation, and testing. The project maintainer defines requirements, reviews and tests implementations, makes technical decisions, and is responsible for the code included in the repository.
+
+AI-generated contributions are not assumed to be correct or production-ready without validation.
+
+## Attribution
+
+Shroudtopia is a separate third-party project. Its code and binaries are not bundled here. No Embervale Atlas code or assets are included.

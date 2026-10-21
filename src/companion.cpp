@@ -3,9 +3,9 @@
 #include "companion/localization.h"
 
 // Integration is intentionally not implemented: no hooks or game memory access.
-extern "C" __declspec(dllexport) int CompanionVersion() noexcept { return 5; }
+extern "C" __declspec(dllexport) int CompanionVersion() noexcept { return 6; }
 BOOL APIENTRY DllMain(HMODULE, DWORD reason, LPVOID) {
     if (reason == DLL_PROCESS_ATTACH)
-        OutputDebugStringW(L"[Embervale Companion] v0.5 module loaded (diagnostic only).\n");
+        OutputDebugStringW(L"[Embervale Companion] v0.6 module loaded (diagnostic only).\n");
     return TRUE;
 }

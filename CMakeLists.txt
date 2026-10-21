@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(EmbervaleCompanion VERSION 0.5.0 LANGUAGES CXX)
+project(EmbervaleCompanion VERSION 0.6.0 LANGUAGES CXX)
 if(WIN32)
 add_executable(EmbervaleCompanionVulkanProbe src/vulkan_probe.cpp)
 target_compile_features(EmbervaleCompanionVulkanProbe PRIVATE cxx_std_17)
@@ -29,4 +29,18 @@ if(BUILD_TESTING)
   add_custom_command(TARGET EmbervaleCompanionTests POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/assets/locales" "$<TARGET_FILE_DIR:EmbervaleCompanionTests>/locales")
   add_test(NAME LocalizationTests COMMAND EmbervaleCompanionTests "$<TARGET_FILE_DIR:EmbervaleCompanionTests>/locales")
+endif()
+
+# Optional real Shroudtopia adapter. The official SDK header is NOT vendored.
+# Point SHROUDTOPIA_INCLUDE_DIR to the directory containing shroudtopia.h.
+set(SHROUDTOPIA_INCLUDE_DIR "" CACHE PATH "Directory containing the official Shroudtopia shroudtopia.h")
+if(WIN32 AND SHROUDTOPIA_INCLUDE_DIR)
+  if(NOT EXISTS "${SHROUDTOPIA_INCLUDE_DIR}/shroudtopia.h")
+    message(FATAL_ERROR "SHROUDTOPIA_INCLUDE_DIR must contain shroudtopia.h")
+  endif()
+  add_library(EmbervaleCompanionShroudtopia SHARED src/shroudtopia_adapter.cpp)
+  target_compile_features(EmbervaleCompanionShroudtopia PRIVATE cxx_std_17)
+  target_include_directories(EmbervaleCompanionShroudtopia PRIVATE "${SHROUDTOPIA_INCLUDE_DIR}")
+  target_compile_definitions(EmbervaleCompanionShroudtopia PRIVATE WIN32_LEAN_AND_MEAN NOMINMAX UNICODE _UNICODE)
+  set_target_properties(EmbervaleCompanionShroudtopia PROPERTIES OUTPUT_NAME "EmbervaleCompanionShroudtopia")
 endif()
