@@ -1,0 +1,15 @@
+{
+  "app.title": "Embervale Companion",
+  "settings.title": "Configurações",
+  "settings.language": "Idioma",
+  "settings.auto_language": "Usar idioma do sistema",
+  "map.title": "Mapa",
+  "map.search": "Pesquisar locais",
+  "map.coordinates": "Mostrar coordenadas",
+  "map.minimap": "Exibir minimapa",
+  "map.filters": "Filtros",
+  "map.marker": "Adicionar marcador",
+  "map.no_results": "Nenhum local encontrado",
+  "action.save": "Salvar alterações",
+  "action.cancel": "Cancelar"
+}

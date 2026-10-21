@@ -1,0 +1,15 @@
+{
+  "app.title": "Embervale Companion",
+  "settings.title": "Settings",
+  "settings.language": "Language",
+  "settings.auto_language": "Use system language",
+  "map.title": "Map",
+  "map.search": "Search locations",
+  "map.coordinates": "Show coordinates",
+  "map.minimap": "Show minimap",
+  "map.filters": "Filters",
+  "map.marker": "Add marker",
+  "map.no_results": "No locations found",
+  "action.save": "Save changes",
+  "action.cancel": "Cancel"
+}

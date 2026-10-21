@@ -1,28 +1,47 @@
-# Embervale Companion — v0.1 (esqueleto técnico)
+# Embervale Companion v0.2 — localization foundation
 
-Projeto independente para Windows 11 x64 / Enshrouded Steam.
+Independent open-source-ready **source prototype** for Enshrouded (Windows x64). This is **not yet a working in-game mod**.
 
-## Estado real
+## What changed
 
-- Código-fonte de uma DLL mínima e CMake incluídos.
-- Ainda **não** há carregamento pelo Enshrouded, interface, atalho, minimapa ou leitura de coordenadas.
-- A DLL **não** substitui o `dinput8.dll` do Embervale Atlas.
-- Não inclui código ou recursos do Embervale Atlas.
+- All code identifiers, comments, and documentation are in English.
+- Locale files use flat UTF-8 JSON string dictionaries (`assets/locales/en-US.json` and `pt-BR.json`).
+- `Localization` loads the English reference dictionary, switches languages, and falls back to English for missing keys.
+- `system_language()` reads the Windows locale. A future UI can choose this by default, then let the user override it.
+- Invalid/missing locale files do not replace the active locale.
+- A tiny dependency-free parser supports escaped JSON strings and Unicode escape sequences.
 
-## Compilar no Windows
+## Build (Windows 11, Visual Studio 2022)
 
-Instale Visual Studio 2022 com a carga de trabalho "Desenvolvimento para desktop com C++" e CMake.
-No terminal de desenvolvedor x64:
+Install the **Desktop development with C++** workload. Run in a VS developer terminal:
 
 ```powershell
 cmake -S . -B build -A x64
 cmake --build build --config Release
 ```
 
-Resultado esperado: `build/Release/EmbervaleCompanion.dll`.
+Output: `build/Release/EmbervaleCompanion.dll` and `build/Release/locales/`.
 
-**Não copie a DLL para a pasta do jogo esperando que funcione:** não há carregador integrado.
+## Using localization in the future UI
 
-## Próximo marco
+```cpp
+companion::Localization i18n(localeDirectory);
+const auto systemLocale = companion::Localization::system_language();
+if (!i18n.set_language(systemLocale)) i18n.set_language("en-US");
+// ImGui::TextUnformatted(i18n.get("settings.title").c_str());
+// Set up a font with the glyphs required for the selected language.
+```
 
-Validar um mecanismo de carregamento permitido/compatível, de preferência sem substituir DLLs existentes. Só então desenvolver interface ImGui e atalho. Fazer backup da instalação e testar offline.
+The locale directory should be derived from the DLL installation path by the future bootstrapper, not the process working directory. Persisting language preferences and rendering a selector are future tasks.
+
+## Important limitations
+
+- No loader, UI, map, game hooks, coordinates, or live language selector yet.
+- The DLL **must not** be copied into the game directory expecting it to load automatically.
+- No code or assets from Embervale Atlas are included.
+- The custom parser accepts only flat string-to-string JSON objects, not general JSON.
+- The project has not been compiled on Windows or tested inside Enshrouded.
+
+## Next milestone
+
+Choose and validate a compatible loader, then add the ImGui language dropdown and persist settings.
