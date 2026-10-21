@@ -1,34 +1,30 @@
-# Embervale Companion v0.4 — standalone UI preview
+# Embervale Companion v0.5 — Vulkan readiness
 
 Independent C++17 project for Enshrouded. **Not yet an in-game mod.**
 
-## What is new
+## New in v0.5
 
-`EmbervaleCompanionPreview.exe` is a native Windows preview window. It demonstrates
-English/Brazilian Portuguese language switching, UI controls for coordinates and
-minimap, and a search text field. The checkboxes and search are **visual prototypes**:
-no map, coordinates, search data, settings persistence, Vulkan rendering, or game
-integration is implemented. It does **not** install or inject anything into Enshrouded.
+- `EmbervaleCompanionVulkanProbe.exe`: checks that the Windows Vulkan loader is present, reports its API version, creates a Vulkan instance and counts physical devices. **No Vulkan SDK is needed for this probe.** It does not detect which graphics API Enshrouded itself is using.
+- `docs/INTEGRATION.md`: proposed Shroudtopia lifecycle adapter and Vulkan UI integration roadmap, clearly separated.
+- Win32 preview and localization tests remain available; the PT-BR language label uses a Unicode escape for a source-encoding-independent build.
+- Diagnostic DLL is still **not** compatible with any mod loader. Do not copy it into the game folder.
 
-The existing diagnostic `EmbervaleCompanion.dll` and localization unit tests remain.
+## Windows build
 
-## Build on Windows
+Open in VS Code and run **CMake: Configure** and **CMake: Build** with your MSVC x64 kit. Then from the project directory:
 
-1. Extract the ZIP into a new directory and open it in VS Code.
-2. Select the x64 MSVC kit, then run **CMake: Configure** and **CMake: Build**.
-3. Run `ctest --test-dir build -C Debug --output-on-failure`.
-4. Launch `build\Debug\EmbervaleCompanionPreview.exe` (Visual Studio generator),
-   or find the executable under your selected CMake build directory.
-5. Change the language dropdown and confirm accented PT-BR text displays correctly.
+```powershell
+ctest --test-dir build -C Debug --output-on-failure
+.\build\Debug\EmbervaleCompanionVulkanProbe.exe
+.\build\Debug\EmbervaleCompanionPreview.exe
+```
 
-If the build uses a single-config generator, look under `build\` instead of `build\Debug\`.
+With a single-configuration generator, executables may instead be in `build\`.
 
-## Architecture and next step
+Expected Vulkan probe output includes `Vulkan loader API: ...`, `Vulkan physical devices: 1` (or another nonzero count), and `PASS: Vulkan is available.` This verifies only the local Vulkan runtime, **not** the game's renderer or overlay compatibility.
 
-The preview uses Win32 controls rather than Dear ImGui or Vulkan. This deliberately
-validates the language/UI behavior **without pretending an in-game Vulkan hook works**.
-Next, independently verify the documented Enshrouded mod loader interface and Vulkan
-render integration before writing a game-facing adapter. Do not install the DLL in the
-game folder or overwrite `dinput8.dll` based on this prototype.
+## Next milestone
+
+Validate the exact loader ABI on the current game version; build a genuine mod-loader lifecycle DLL, then implement Vulkan frame integration and Dear ImGui. No game hooks, injection, or map functionality are claimed in v0.5.
 
 No Embervale Atlas code or assets are included.
