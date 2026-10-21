@@ -1,6 +1,12 @@
 cmake_minimum_required(VERSION 3.21)
-project(EmbervaleCompanion VERSION 0.3.0 LANGUAGES CXX)
+project(EmbervaleCompanion VERSION 0.4.0 LANGUAGES CXX)
 if(WIN32)
+add_executable(EmbervaleCompanionPreview WIN32 src/preview.cpp src/localization.cpp)
+target_compile_features(EmbervaleCompanionPreview PRIVATE cxx_std_17)
+target_include_directories(EmbervaleCompanionPreview PRIVATE include)
+target_compile_definitions(EmbervaleCompanionPreview PRIVATE WIN32_LEAN_AND_MEAN NOMINMAX UNICODE _UNICODE)
+add_custom_command(TARGET EmbervaleCompanionPreview POST_BUILD
+ COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/assets/locales" "$<TARGET_FILE_DIR:EmbervaleCompanionPreview>/locales")
 add_library(EmbervaleCompanion SHARED src/companion.cpp src/localization.cpp)
 target_compile_features(EmbervaleCompanion PRIVATE cxx_std_17)
 target_include_directories(EmbervaleCompanion PRIVATE include)
