@@ -28,12 +28,37 @@ public:
         return {"Embervale Companion", "Localization and in-game map project (loader diagnostic)",
                 "0.6.0", "Embervale Companion contributors", "", true, false};
     }
-    void Load(ModContext*) override { log_event("Load"); }
-    void Unload(ModContext*) override { log_event("Unload"); }
-    void Activate(ModContext*) override { log_event("Activate"); }
-    void Deactivate(ModContext*) override { log_event("Deactivate"); }
+    void Load(ModContext*) override {
+        loaded = true;
+        log_event("Load");
+    }
+
+    void Unload(ModContext*) override {
+        loaded = false;
+        log_event("Unload");
+    }
+
+    void Activate(ModContext*) override {
+        if (active) return;
+
+        active = true;
+        log_event("Activate");
+    }
+
+    void Deactivate(ModContext*) override {
+        if (!active) return;
+
+        active = false;
+        log_event("Deactivate");
+    }
+
     void Update(ModContext*) override {
-        if (!logged_update_) { logged_update_ = true; log_event("First Update"); }
+        if (!active) return;
+
+        if (!logged_update_) {
+            logged_update_ = true;
+            log_event("First Update");
+        }
     }
 private:
     bool logged_update_ = false;

@@ -39,3 +39,48 @@ AI-generated contributions are not assumed to be correct or production-ready wit
 ## Attribution
 
 Shroudtopia is a separate third-party project. Its code and binaries are not bundled here. No Embervale Atlas code or assets are included.
+
+## Third-Party Dependencies
+
+### Shroudtopia
+
+Embervale Companion uses [Shroudtopia](https://github.com/s0t7x/shroudtopia), an experimental mod loader for Enshrouded, to integrate with the game process.
+
+- **Project:** [s0t7x/shroudtopia](https://github.com/s0t7x/shroudtopia)
+- **Author:** Miguel Oppermann
+- **License:** MIT
+- **License notice:** [licenses/SHROUDTOPIA-LICENSE.txt](licenses/SHROUDTOPIA-LICENSE.txt)
+- **Bundled SDK header:** `include/shroudtopia/shroudtopia.h`
+
+Shroudtopia is an independent third-party project. Embervale Companion is not affiliated with or officially endorsed by its author.
+
+The Shroudtopia loader must be installed separately. Embervale Companion does not redistribute the loader binaries.
+
+### Building the Shroudtopia Adapter
+
+The Shroudtopia adapter must be built in **Release** configuration.
+
+```powershell
+cmake -S . -B build
+cmake --build build --config Release
+```
+
+The resulting adapter is located at:
+
+`build/Release/EmbervaleCompanionShroudtopia.dll`
+
+Copy this DLL into the `mods` directory of the Enshrouded installation.
+
+**Important:** Debug builds are not supported for in-game use. During integration testing, the Debug adapter caused a startup failure, while the Release adapter successfully completed mod registration, loading, activation, and its first update.
+
+### Enabling the Mod
+
+Add the following entry inside the `mods` object in `shroudtopia.json`:
+
+```json
+"Embervale Companion": {
+    "active": true
+}
+```
+
+The current integration is experimental and provides lifecycle diagnostics only. In-game map rendering has not yet been implemented.
