@@ -1,5 +1,7 @@
 #include "companion/localization.h"
+#ifdef _WIN32
 #include <windows.h>
+#endif
 #include <fstream>
 #include <iterator>
 #include <stdexcept>
@@ -66,7 +68,7 @@ struct Parser {
     std::unordered_map<std::string,std::string> object() {
         std::unordered_map<std::string,std::string> result;
         if (!take('{')) throw std::runtime_error("Expected object");
-        if (take('}')) return result;
+        if (take('}')) { ws(); if (i != s.size()) throw std::runtime_error("Trailing content"); return result; }
         do {
             auto key=str(); if (!take(':')) throw std::runtime_error("Expected colon");
             auto value=str();
@@ -102,6 +104,7 @@ std::string Localization::get(const std::string& key) const {
     return "["+key+"]";
 }
 std::string Localization::system_language() {
+#ifdef _WIN32
     wchar_t name[LOCALE_NAME_MAX_LENGTH]{};
     if (!GetUserDefaultLocaleName(name, LOCALE_NAME_MAX_LENGTH)) return "en-US";
     int size=WideCharToMultiByte(CP_UTF8,0,name,-1,nullptr,0,nullptr,nullptr);
@@ -109,5 +112,8 @@ std::string Localization::system_language() {
     std::string value(static_cast<size_t>(size), '\0');
     WideCharToMultiByte(CP_UTF8,0,name,-1,value.data(),size,nullptr,nullptr);
     value.pop_back(); return value;
+#else
+    return "en-US"; // Windows locale detection is tested on Windows.
+#endif
 }
 }

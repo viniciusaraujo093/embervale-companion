@@ -1,47 +1,39 @@
-# Embervale Companion v0.2 — localization foundation
+# Embervale Companion v0.3 — localization tests
 
-Independent open-source-ready **source prototype** for Enshrouded (Windows x64). This is **not yet a working in-game mod**.
+Independent C++17 prototype for Enshrouded. **Not an installable in-game mod yet.**
 
-## What changed
+## Build and test on Windows 11 (VS Code + Build Tools 2026)
 
-- All code identifiers, comments, and documentation are in English.
-- Locale files use flat UTF-8 JSON string dictionaries (`assets/locales/en-US.json` and `pt-BR.json`).
-- `Localization` loads the English reference dictionary, switches languages, and falls back to English for missing keys.
-- `system_language()` reads the Windows locale. A future UI can choose this by default, then let the user override it.
-- Invalid/missing locale files do not replace the active locale.
-- A tiny dependency-free parser supports escaped JSON strings and Unicode escape sequences.
-
-## Build (Windows 11, Visual Studio 2022)
-
-Install the **Desktop development with C++** workload. Run in a VS developer terminal:
+Open the project folder in VS Code, select the x64 MSVC kit, and run **CMake: Configure**, then **CMake: Build**. From the project root in PowerShell:
 
 ```powershell
-cmake -S . -B build -A x64
-cmake --build build --config Release
+ctest --test-dir build -C Debug --output-on-failure
 ```
 
-Output: `build/Release/EmbervaleCompanion.dll` and `build/Release/locales/`.
+Expected: `100% tests passed`. The test executable is `build/Debug/EmbervaleCompanionTests.exe` with Visual Studio's multi-configuration generator. You can run it directly:
 
-## Using localization in the future UI
-
-```cpp
-companion::Localization i18n(localeDirectory);
-const auto systemLocale = companion::Localization::system_language();
-if (!i18n.set_language(systemLocale)) i18n.set_language("en-US");
-// ImGui::TextUnformatted(i18n.get("settings.title").c_str());
-// Set up a font with the glyphs required for the selected language.
+```powershell
+.\build\Debug\EmbervaleCompanionTests.exe .\build\Debug\locales
 ```
 
-The locale directory should be derived from the DLL installation path by the future bootstrapper, not the process working directory. Persisting language preferences and rendering a selector are future tasks.
+For Release, build the Release configuration and replace `Debug` with `Release` in the commands.
 
-## Important limitations
+If CMake tests are not available, run **CMake: Delete Cache and Reconfigure**, then build again.
 
-- No loader, UI, map, game hooks, coordinates, or live language selector yet.
-- The DLL **must not** be copied into the game directory expecting it to load automatically.
-- No code or assets from Embervale Atlas are included.
-- The custom parser accepts only flat string-to-string JSON objects, not general JSON.
-- The project has not been compiled on Windows or tested inside Enshrouded.
+## What is tested
+
+- English default; switching to Brazilian Portuguese and back
+- UTF-8 accents and JSON Unicode escape decoding
+- Missing-key markers and English fallback for incomplete translations
+- Missing or invalid locale files, and rejection of unsafe locale names
+
+## Current limitations
+
+- The DLL compiles but has no game loader, map, hooks, UI, or player coordinates.
+- Tests validate localization code, **not** Enshrouded compatibility.
+- No Embervale Atlas code or assets are used.
+- Translation JSON supports only flat string-to-string objects.
 
 ## Next milestone
 
-Choose and validate a compatible loader, then add the ImGui language dropdown and persist settings.
+Research a compatible, documented game loading mechanism and prototype an in-game UI without copying proprietary mod code.

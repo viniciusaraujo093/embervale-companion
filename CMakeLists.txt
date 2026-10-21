@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.21)
-project(EmbervaleCompanion VERSION 0.2.0 LANGUAGES CXX)
+project(EmbervaleCompanion VERSION 0.3.0 LANGUAGES CXX)
+if(WIN32)
 add_library(EmbervaleCompanion SHARED src/companion.cpp src/localization.cpp)
 target_compile_features(EmbervaleCompanion PRIVATE cxx_std_17)
 target_include_directories(EmbervaleCompanion PRIVATE include)
@@ -8,3 +9,15 @@ set_target_properties(EmbervaleCompanion PROPERTIES OUTPUT_NAME "EmbervaleCompan
 # Assets live alongside the DLL; no game installation/injection is performed.
 add_custom_command(TARGET EmbervaleCompanion POST_BUILD
  COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/assets/locales" "$<TARGET_FILE_DIR:EmbervaleCompanion>/locales")
+endif()
+
+include(CTest)
+if(BUILD_TESTING)
+  add_executable(EmbervaleCompanionTests tests/localization_tests.cpp src/localization.cpp)
+  target_compile_features(EmbervaleCompanionTests PRIVATE cxx_std_17)
+  target_include_directories(EmbervaleCompanionTests PRIVATE include)
+  target_compile_definitions(EmbervaleCompanionTests PRIVATE UNICODE _UNICODE)
+  add_custom_command(TARGET EmbervaleCompanionTests POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/assets/locales" "$<TARGET_FILE_DIR:EmbervaleCompanionTests>/locales")
+  add_test(NAME LocalizationTests COMMAND EmbervaleCompanionTests "$<TARGET_FILE_DIR:EmbervaleCompanionTests>/locales")
+endif()
