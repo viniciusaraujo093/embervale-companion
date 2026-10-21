@@ -31,28 +31,18 @@ if(BUILD_TESTING)
   add_test(NAME LocalizationTests COMMAND EmbervaleCompanionTests "$<TARGET_FILE_DIR:EmbervaleCompanionTests>/locales")
 endif()
 
-# Shroudtopia integration
-set(SHROUDTOPIA_INCLUDE_DIR
-    "${CMAKE_CURRENT_SOURCE_DIR}/include/shroudtopia"
-)
-if(WIN32)
-    if(NOT EXISTS "${SHROUDTOPIA_INCLUDE_DIR}/shroudtopia.h")
-        message(FATAL_ERROR "Shroudtopia header not found")
-    endif()
-    add_library(EmbervaleCompanionShroudtopia SHARED
-        src/shroudtopia_adapter.cpp
-    )
-    target_include_directories(EmbervaleCompanionShroudtopia PRIVATE
-        "${SHROUDTOPIA_INCLUDE_DIR}"
-    )
-    target_compile_features(EmbervaleCompanionShroudtopia PRIVATE cxx_std_17)
-    target_compile_definitions(EmbervaleCompanionShroudtopia PRIVATE
-        WIN32_LEAN_AND_MEAN
-        NOMINMAX
-        UNICODE
-        _UNICODE
-    )
-    set_target_properties(EmbervaleCompanionShroudtopia PROPERTIES
-        OUTPUT_NAME "EmbervaleCompanionShroudtopia"
-    )
+# Shroudtopia integration is optional for builds without the SDK header.
+option(BUILD_SHROUDTOPIA_ADAPTER "Build the Shroudtopia mod loader adapter" ON)
+set(SHROUDTOPIA_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include/shroudtopia"
+    CACHE PATH "Directory containing shroudtopia.h")
+if(WIN32 AND BUILD_SHROUDTOPIA_ADAPTER)
+  if(NOT EXISTS "${SHROUDTOPIA_INCLUDE_DIR}/shroudtopia.h")
+    message(FATAL_ERROR "Shroudtopia header not found in ${SHROUDTOPIA_INCLUDE_DIR}. Set SHROUDTOPIA_INCLUDE_DIR or -DBUILD_SHROUDTOPIA_ADAPTER=OFF")
+  endif()
+  add_library(EmbervaleCompanionShroudtopia SHARED src/shroudtopia_adapter.cpp)
+  target_compile_features(EmbervaleCompanionShroudtopia PRIVATE cxx_std_17)
+  target_include_directories(EmbervaleCompanionShroudtopia PRIVATE "${SHROUDTOPIA_INCLUDE_DIR}")
+  # WIN32_LEAN_AND_MEAN is already defined in the upstream header.
+  target_compile_definitions(EmbervaleCompanionShroudtopia PRIVATE NOMINMAX UNICODE _UNICODE)
+  set_target_properties(EmbervaleCompanionShroudtopia PROPERTIES OUTPUT_NAME "EmbervaleCompanionShroudtopia")
 endif()

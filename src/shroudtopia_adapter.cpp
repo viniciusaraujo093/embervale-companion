@@ -32,29 +32,22 @@ public:
         loaded = true;
         log_event("Load");
     }
-
     void Unload(ModContext*) override {
         loaded = false;
         log_event("Unload");
     }
-
     void Activate(ModContext*) override {
         if (active) return;
-
         active = true;
         log_event("Activate");
     }
-
     void Deactivate(ModContext*) override {
         if (!active) return;
-
         active = false;
         log_event("Deactivate");
     }
-
     void Update(ModContext*) override {
         if (!active) return;
-
         if (!logged_update_) {
             logged_update_ = true;
             log_event("First Update");

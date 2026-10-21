@@ -1,11 +1,15 @@
-# Build artifacts
+# Generated build output
 /build/
+/out/
 *.dll
 *.exe
 *.pdb
 *.obj
 *.lib
 *.exp
-
-# Local logs
+*.ilk
 *.log
+
+# Editor and local files
+.vs/
+.vscode/
