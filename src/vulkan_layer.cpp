@@ -21,6 +21,7 @@
 #include <vector>
 
 #include <algorithm>
+#include "c4_map_observer.h"
 
 namespace {
 
@@ -1500,6 +1501,7 @@ VKAPI_ATTR VkResult VKAPI_CALL vkQueuePresentKHR(
     }
 
     const auto count = ++present_count;
+    embervale::c4::observe(log_event, count);
 
     if (count == 1) {
 
