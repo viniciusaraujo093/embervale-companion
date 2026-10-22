@@ -1,78 +1,59 @@
-# Embervale Companion v0.6 — Shroudtopia lifecycle integration
+# Embervale Companion
 
-Independent C++17 project for Enshrouded. **The mod loads inside the game, but no in-game map or overlay is implemented yet.**
+Experimental companion mod for **Enshrouded**, written in C++17. Current development milestone: **v0.7 / C3.2 Vulkan overlay proof of concept**.
 
-## Current status
+> **Status:** experimental, for local testing only. This is **not** a distributable Shroudtopia overlay yet.
 
-- Win32 standalone preview, UTF-8 localization (`en-US`, `pt-BR`), and CTest localization tests.
-- Standalone Vulkan availability probe (does not establish renderer hooking).
-- Shroudtopia adapter exports `CreateModInstance` and implements `Load`, `Unload`, `Activate`, `Deactivate`, and `Update`.
-- **Locally validated on Windows with Enshrouded and Shroudtopia:** registration, `Load`, a single `Activate`, and the first `Update` were observed in logs; the game started normally using a **Release** build.
-- `Deactivate` and `Unload` have not yet been verified during an actual loader lifecycle.
-- No Vulkan frame integration, game map, player coordinates, or in-game UI exists yet.
+## What works
 
-## Build and test (Windows, MSVC)
+- Localization and a standalone Win32 UI preview.
+- Shroudtopia Release adapter lifecycle integration (v0.6); this adapter does **not** yet load the Vulkan overlay automatically.
+- A Vulkan loader layer that intercepts swapchain/acquire/present lifecycle and draws a fixed orange square at the upper-right of the final image when explicitly enabled.
+- Locally observed successful game startup, world entry, Alt+Tab, resolution changes (including swapchain recreation), and normal exit during C3.2 tests.
 
-```powershell
-cmake -S . -B build
-cmake --build build --config Release
-ctest --test-dir build -C Release --output-on-failure
-```
+## What's not implemented
 
-The Shroudtopia adapter is enabled by default on Windows when using the bundled upstream SDK header at `include/shroudtopia/shroudtopia.h`. You may specify a different compatible SDK header directory with `-DSHROUDTOPIA_INCLUDE_DIR="C:/path/to/header"`.
+- Automatic installation of the Vulkan layer through Shroudtopia.
+- Reliable detection of the in-game world map being open.
+- Markers/icons positioned and scaled with the world map, or fog-of-war filtering.
+- A production-grade synchronization and compatibility guarantee.
 
-To build only the standalone components, without the Shroudtopia SDK or adapter:
+## Requirements
 
-```powershell
-cmake -S . -B build-standalone -DBUILD_SHROUDTOPIA_ADAPTER=OFF
-cmake --build build-standalone --config Debug
-ctest --test-dir build-standalone -C Debug --output-on-failure
-```
+- Windows, MSVC, CMake 3.21+, Vulkan SDK (headers and loader).
+- Enshrouded for runtime tests.
+- Shroudtopia SDK header is bundled under `include/shroudtopia/` for the optional adapter.
 
-### CMake cache troubleshooting
-
-CMake caches `SHROUDTOPIA_INCLUDE_DIR` in the build directory. If the SDK header was moved or the directory was configured incorrectly in an earlier attempt, changing the default in `CMakeLists.txt` will not overwrite the cached value.
-
-If CMake reports `Shroudtopia header not found`, first confirm that `include/shroudtopia/shroudtopia.h` exists. Then either configure a fresh build directory:
+## Build the experimental Vulkan layer
 
 ```powershell
-cmake -S . -B build-clean
-cmake --build build-clean --config Release
-ctest --test-dir build-clean -C Release --output-on-failure
+cmake -S . -B build-layer -DBUILD_VULKAN_LAYER=ON -DBUILD_SHROUDTOPIA_ADAPTER=OFF -DBUILD_TESTING=OFF
+cmake --build build-layer --config Release --target EmbervaleCompanionVulkanLayer
 ```
 
-Or explicitly set the SDK header directory in the existing build:
+The layer manifest template is `layers/VkLayer_embervale_companion.json`. To run the experiment, stage the DLL and manifest together in a local test directory and configure the Vulkan loader environment for the Enshrouded process. The developer's local `launch-enshrouded-layer.cmd` is intentionally **not tracked**, because it embeds machine-specific absolute paths.
 
-```powershell
-cmake -S . -B build -DSHROUDTOPIA_INCLUDE_DIR="${PWD}/include/shroudtopia"
-```
+For the currently tested setup, `EMBERVALE_C2_SQUARE=1` enables the diagnostic square. Keep this experiment disabled for normal play.
 
-You can also clear the cached setting using `cmake -U SHROUDTOPIA_INCLUDE_DIR -S . -B build` and reconfigure. A fresh build directory is the simplest way to verify that the default configuration works.
+## Repository layout
 
-### In-game installation (experimental)
+- `src/`: C++ sources, including `vulkan_layer.cpp`.
+- `include/`: project and Shroudtopia headers.
+- `assets/locales/`: EN and PT-BR translations.
+- `layers/`: Vulkan layer manifest.
+- `tests/`: localization tests.
+- `docs/INTEGRATION.md`: Shroudtopia v0.6 integration checkpoint (historical).
+- `docs/EMBERVALE_HANDOFF_v0.7_C3.2.md`: detailed engineering handoff and next steps.
 
-**Build the Shroudtopia adapter in Release for installation.** A Debug adapter caused a game startup failure and corrupted metadata during local testing, whereas Release successfully loaded and activated. Do not install the Debug adapter.
+## Roadmap
 
-1. Install a compatible [Shroudtopia](https://github.com/s0t7x/shroudtopia) loader separately, following its instructions. Check for conflicts with other proxy DLL loaders.
-2. Copy `build/Release/EmbervaleCompanionShroudtopia.dll` to `<Enshrouded installation>/mods/` with the game closed.
-3. In `<Enshrouded installation>/shroudtopia.json`, add the following inside the existing `mods` object (preserve other entries):
+1. Preserve the C3.2 checkpoint and audit Vulkan synchronization.
+2. Detect when the native Enshrouded world map is visible without interfering with rendering.
+3. Draw markers aligned with map zoom and pan, ideally respecting unexplored fog of war.
+4. Package the overlay for normal Shroudtopia installation without requiring end-user Steam launch options.
 
-```json
-"Embervale Companion": {
-  "active": true
-}
-```
+The v1.0 priority is **markers on the original world map**, not a minimap or advanced marker styling.
 
-4. Start the game and inspect `shroudtopia.log` and `embervale-companion.log` in the game installation directory.
+## Safety
 
-Only the adapter DLL belongs in `mods/`; **do not copy** the standalone diagnostic `EmbervaleCompanion.dll` there. If startup fails, remove the adapter DLL and retry. The integration has only been verified in the maintainer's local environment; compatibility is not guaranteed across game or loader versions.
-
-## Third-party dependencies
-
-[Shroudtopia](https://github.com/s0t7x/shroudtopia) is an independent third-party mod loader, licensed under MIT. Its upstream `shroudtopia.h` header is included under `include/shroudtopia/` for building the adapter. The original license and copyright notice are retained in [`licenses/SHROUDTOPIA-LICENSE.txt`](licenses/SHROUDTOPIA-LICENSE.txt). Shroudtopia binaries are **not** bundled; install the loader separately. Embervale Companion is not affiliated with or endorsed by the Shroudtopia author.
-
-No Embervale Atlas code or assets are included.
-
-## AI-Assisted Development
-
-Embervale Companion is developed with assistance from AI tools, including OpenAI's ChatGPT. AI is used for code generation, architectural exploration, documentation, and testing. The project maintainer defines requirements, reviews and tests implementations, makes technical decisions, and is responsible for the code included in the repository. AI-generated contributions are not assumed to be correct or production-ready without validation.
+Do not distribute third-party game assets. Keep build outputs, logs, local launch scripts, and machine-specific paths out of Git. See `CONTRIBUTING.md`.

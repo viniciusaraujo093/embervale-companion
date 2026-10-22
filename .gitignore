@@ -1,6 +1,13 @@
-# Generated build output
-/build/
+# Generated CMake/Visual Studio build trees
+/build*/
 /out/
+/cmake-build-*/
+/CMakeFiles/
+/CMakeCache.txt
+/cmake_install.cmake
+/Testing/
+
+# Compiled binaries and intermediate artifacts
 *.dll
 *.exe
 *.pdb
@@ -9,7 +16,18 @@
 *.exp
 *.ilk
 *.log
+*.tlog
+*.idb
+*.ipch
 
-# Editor and local files
+# Local IDE state
 .vs/
 .vscode/
+
+# Machine-specific Vulkan layer launcher (contains absolute paths)
+/launch-enshrouded-layer.cmd
+
+# Scratch archives and local diagnostics
+*.zip
+*.bak
+*.tmp
