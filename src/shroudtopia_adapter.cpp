@@ -1,5 +1,8 @@
 // Experimental passive Vulkan instance function-resolution probe for Shroudtopia.
 #include "shroudtopia.h"
+#ifdef EMBERVALE_C4_S18_PUBLIC_API
+#include "embervale_core_runtime.h"
+#endif
 
 #include <atomic>
 #include <chrono>
@@ -11,6 +14,42 @@
 #include <string>
 #include <thread>
 #include <windows.h>
+#ifdef EMBERVALE_C4_S20_LEAN_STARTUP
+#include "c4_s20_startup_metrics.h"
+#endif
+#ifdef EMBERVALE_C4_SHROUDTOPIA_PROBE
+#include "c4_shroudtopia_probe.h"
+#ifdef EMBERVALE_C4_S8_DIRECT_PRESENT_DETOUR
+#include "c4_s8_direct_present_detour.h"
+#endif
+#ifdef EMBERVALE_C4_S7_PASSIVE_PRESENT_HOOK
+#include "c4_s7_present_observer.h"
+#ifdef EMBERVALE_C4_S11_SWAPCHAIN_OBSERVER
+#include "c4_s11_swapchain_observer.h"
+#ifdef EMBERVALE_C4_S12_ACQUIRE_OBSERVER
+#include "c4_s12_acquire_observer.h"
+#ifdef EMBERVALE_C4_S13_NATIVE_CONTEXT
+#include "c4_s13_native_context.h"
+#ifdef EMBERVALE_C4_S16_NATIVE_FIRST
+#include "c4_s16_native_first.h"
+#endif
+#ifdef EMBERVALE_C4_S14_ORANGE_SQUARE
+#if defined(EMBERVALE_C4_S21_CORE_MODE)
+#include "c4_s21_core_presentation.h"
+#elif defined(EMBERVALE_C4_S17_RECLAIMING_SQUARE)
+#include "c4_s17_reclaiming_square.h"
+#elif defined(EMBERVALE_C4_S15_RESILIENT_SQUARE)
+#include "c4_s15_resilient_square.h"
+#else
+#include "c4_s14_orange_square.h"
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#include "c4_shroudtopia_vulkan_table_probe.h"
+#endif
 
 #ifdef EMBERVALE_EXPERIMENTAL_VULKAN_HOOK
 #include <MinHook.h>
@@ -175,17 +214,55 @@ public:
                 "0.7.0", "Embervale Companion contributors", "", true, false};
     }
 
-    void Load(ModContext*) override {
+    void Load(ModContext* context) override {
+        #ifdef EMBERVALE_C4_S18_PUBLIC_API
+            embervale::core::set_loaded(true);
+        #endif
         loaded = true;
+#ifdef EMBERVALE_C4_S20_LEAN_STARTUP
+        embervale::c4::startup20::load_start();
+#endif
         log_event("Load");
         probe_vulkan("Load");
+#ifdef EMBERVALE_C4_SHROUDTOPIA_PROBE
+#ifndef EMBERVALE_C4_S20_LEAN_STARTUP
+        if (context != nullptr && context->game.isClient)
+            log_event(embervale::c4::inspect_render_present());
+        else
+            log_event("C4-S1 scan skipped (not client)");
+#endif
+#endif
 #ifdef EMBERVALE_EXPERIMENTAL_VULKAN_HOOK
         log_event("Hook: attempting early installation in Load");
         install_resolution_hook();
 #endif
+#ifdef EMBERVALE_C4_S20_LEAN_STARTUP
+        embervale::c4::startup20::load_end(log_event);
+#endif
     }
 
     void Unload(ModContext*) override {
+        #ifdef EMBERVALE_C4_S18_PUBLIC_API
+            embervale::core::set_loaded(false);
+        #endif
+#ifdef EMBERVALE_C4_S8_DIRECT_PRESENT_DETOUR
+        embervale::c4::direct::stop(log_event);
+#endif
+#ifdef EMBERVALE_C4_S11_SWAPCHAIN_OBSERVER
+#ifdef EMBERVALE_C4_S12_ACQUIRE_OBSERVER
+#ifdef EMBERVALE_C4_S13_NATIVE_CONTEXT
+#ifdef EMBERVALE_C4_S14_ORANGE_SQUARE
+        embervale::c4::square::stop(log_event);
+#endif
+        embervale::c4::nativeframe::stop(log_event);
+#endif
+        embervale::c4::acquire::stop(log_event);
+#endif
+        embervale::c4::swapchain::stop(log_event);
+#endif
+#ifdef EMBERVALE_C4_S7_PASSIVE_PRESENT_HOOK
+        embervale::c4::present::stop(log_event);
+#endif
 #ifdef EMBERVALE_EXPERIMENTAL_VULKAN_HOOK
         stop_monitor();
         report_counters("Hook: final");
@@ -197,6 +274,9 @@ public:
     }
 
     void Activate(ModContext*) override {
+        #ifdef EMBERVALE_C4_S18_PUBLIC_API
+            embervale::core::set_active(true);
+        #endif
         if (active) return;
         active = true;
         logged_update_ = false;
@@ -210,6 +290,27 @@ public:
     }
 
     void Deactivate(ModContext*) override {
+        #ifdef EMBERVALE_C4_S18_PUBLIC_API
+            embervale::core::set_active(false);
+        #endif
+#ifdef EMBERVALE_C4_S8_DIRECT_PRESENT_DETOUR
+        embervale::c4::direct::stop(log_event);
+#endif
+#ifdef EMBERVALE_C4_S11_SWAPCHAIN_OBSERVER
+#ifdef EMBERVALE_C4_S12_ACQUIRE_OBSERVER
+#ifdef EMBERVALE_C4_S13_NATIVE_CONTEXT
+#ifdef EMBERVALE_C4_S14_ORANGE_SQUARE
+        embervale::c4::square::stop(log_event);
+#endif
+        embervale::c4::nativeframe::stop(log_event);
+#endif
+        embervale::c4::acquire::stop(log_event);
+#endif
+        embervale::c4::swapchain::stop(log_event);
+#endif
+#ifdef EMBERVALE_C4_S7_PASSIVE_PRESENT_HOOK
+        embervale::c4::present::stop(log_event);
+#endif
         if (!active) return;
 #ifdef EMBERVALE_EXPERIMENTAL_VULKAN_HOOK
         stop_monitor();
@@ -221,6 +322,52 @@ public:
     }
 
     void Update(ModContext*) override {
+#ifdef EMBERVALE_C4_SHROUDTOPIA_PROBE
+#ifndef EMBERVALE_C4_S16_NATIVE_FIRST
+        if (active) embervale::c4::probe_vulkan_table_step(log_event);
+#endif
+#ifdef EMBERVALE_C4_S8_DIRECT_PRESENT_DETOUR
+        if (active) embervale::c4::direct::report(log_event);
+#endif
+#ifdef EMBERVALE_C4_S7_PASSIVE_PRESENT_HOOK
+#ifndef EMBERVALE_C4_S20_LEAN_STARTUP
+        if (active) embervale::c4::present::report(log_event);
+#endif
+#ifdef EMBERVALE_C4_S11_SWAPCHAIN_OBSERVER
+#ifndef EMBERVALE_C4_S20_LEAN_STARTUP
+        if (active) embervale::c4::swapchain::report(log_event);
+#endif
+#ifdef EMBERVALE_C4_S12_ACQUIRE_OBSERVER
+#ifndef EMBERVALE_C4_S20_LEAN_STARTUP
+        if (active) embervale::c4::acquire::report(log_event);
+#endif
+#ifdef EMBERVALE_C4_S13_NATIVE_CONTEXT
+        if (active) {
+            embervale::c4::nativeframe::maybe_install(log_event);
+#ifdef EMBERVALE_C4_S16_NATIVE_FIRST
+            embervale::c4::nativefirst::step(log_event);
+#endif
+#ifndef EMBERVALE_C4_S20_LEAN_STARTUP
+            embervale::c4::nativeframe::report(log_event);
+#endif
+#ifdef EMBERVALE_C4_S14_ORANGE_SQUARE
+            embervale::c4::square::maybe_enable(log_event);
+#ifdef EMBERVALE_C4_S20_LEAN_STARTUP
+            embervale::c4::startup20::update(
+                log_event,
+                embervale::c4::present::installed.load(std::memory_order_acquire) &&
+                embervale::c4::swapchain::installed.load(std::memory_order_acquire) &&
+                embervale::c4::acquire::installed.load(std::memory_order_acquire),
+                embervale::c4::square::drawSuccess.load(std::memory_order_relaxed));
+#endif
+            embervale::c4::square::report(log_event);
+#endif
+        }
+#endif
+#endif
+#endif
+#endif
+#endif
         if (!active || logged_update_) return;
         logged_update_ = true;
         log_event("First Update");
@@ -228,6 +375,9 @@ public:
     }
 
     ~CompanionMod() override {
+#ifdef EMBERVALE_C4_S8_DIRECT_PRESENT_DETOUR
+        embervale::c4::direct::stop(log_event);
+#endif
 #ifdef EMBERVALE_EXPERIMENTAL_VULKAN_HOOK
         stop_monitor();
         stop_resolution_hook();
